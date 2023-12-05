@@ -10,6 +10,7 @@ WIDTH = 1600  # ゲームウィンドウの幅
 HEIGHT = 900  # ゲームウィンドウの高さ
 MAIN_DIR = os.path.split(os.path.abspath(__file__))[0]
 NUM_OF_BOMBS = 5
+Life = 200
 
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
@@ -95,6 +96,7 @@ class Bird:
         screen.blit(self.img, self.rct)
 
 
+
 class Beam:
     """
     ビームに関するクラス
@@ -147,6 +149,29 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
+class Explosion:
+    """
+    爆発エフェクト
+    """
+    Ex_img = pg.image.load("ex03/fig/explosion.gif")
+    def __init__(self, bomb: Bomb, ):
+        Ex_img = pg.image.load("ex03/fig/explosion.gif")
+        self.imgs = [Ex_img, 
+                    pg.transform.rotozoom(pg.transform.flip
+                    (Ex_img, True, False), 90, 1.0)]
+        self.rct = self.imgs[0].get_rect()
+        self.rct.center = bomb.rct.center
+        self.life = Life
+
+    def update(self, screen: pg.Surface):
+        """
+        エフェクトを変化させる
+        """
+        self.life -= 1
+        screen.blit(self.imgs[self.life//30%2], self.rct)
+        
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -154,6 +179,7 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for i in range(NUM_OF_BOMBS)]
     beam = None
+    Ex = []
 
     clock = pg.time.Clock()
     tmr = 0
@@ -177,12 +203,22 @@ def main():
         for i, bomb in enumerate(bombs):
             if beam is not None:
                 if beam.rct.colliderect(bomb.rct):
+                    explosion = Explosion(bombs[i])
+                    Ex.append(explosion)
+
                     beam = None
                     bombs[i] = None
                     bird.change_img(6, screen)
+
+                    
         bombs = [bomb for bomb in bombs if bomb is not None]
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
+        for explosion in Ex:
+            if explosion.life < 0:
+                Ex.remove(explosion)
+            else:
+                  explosion.update(screen)
         for bomb in bombs:
             bomb.update(screen)
         if beam is not None:
