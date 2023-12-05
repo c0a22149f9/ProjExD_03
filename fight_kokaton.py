@@ -96,7 +96,6 @@ class Bird:
         screen.blit(self.img, self.rct)
 
 
-
 class Beam:
     """
     ビームに関するクラス
@@ -161,7 +160,7 @@ class Explosion:
                     (Ex_img, True, False), 90, 1.0)]
         self.rct = self.imgs[0].get_rect()
         self.rct.center = bomb.rct.center
-        self.life = Life
+        self.life = Life # ライフの設定
 
     def update(self, screen: pg.Surface):
         """
@@ -171,7 +170,6 @@ class Explosion:
         screen.blit(self.imgs[self.life//30%2], self.rct)
         
 
-
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -180,6 +178,7 @@ def main():
     bombs = [Bomb() for i in range(NUM_OF_BOMBS)]
     beam = None
     Ex = []
+    Be = []
 
     clock = pg.time.Clock()
     tmr = 0
@@ -189,7 +188,7 @@ def main():
                 return
             elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE: #スペースキーが押されたら
                 beam = Beam(bird) #ビームインスタンスの生成
-        
+                Be.append(beam)
         
         screen.blit(bg_img, [0, 0])
         
@@ -221,8 +220,11 @@ def main():
                   explosion.update(screen)
         for bomb in bombs:
             bomb.update(screen)
-        if beam is not None:
-            beam.update(screen)
+        for beam in Be:
+            if beam.rct.centerx > 1600:
+                Be.remove(beam)
+            else:
+                beam.update
         pg.display.update()
         tmr += 1
         clock.tick(50)
